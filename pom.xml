@@ -85,6 +85,17 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Jackson 3 BOM (tools.jackson) converges transitive jackson-core
+                 3.0.3 dragged in by spring-ai 2.0 GA via jsonschema-generator
+                 to CVE-clear 3.1.4 (CVE-2026-29062) -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>3.1.4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Project modules -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
