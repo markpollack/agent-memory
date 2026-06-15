@@ -17,6 +17,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +42,9 @@ class MemoryCompactorTest {
 	@BeforeEach
 	void setUp() {
 		this.store = new FileSystemMemoryStore(this.tempDir.resolve("memory"));
+		// Spring AI 2.0 GA derives request options via chatModel.getOptions().mutate();
+		// mock returns null by default.
+		when(this.chatModel.getOptions()).thenReturn(ChatOptions.builder().build());
 		this.chatClient = ChatClient.builder(this.chatModel).build();
 	}
 
