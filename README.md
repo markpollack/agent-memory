@@ -2,6 +2,8 @@
 
 Progressive memory management for [Spring AI](https://docs.spring.io/spring-ai/reference/). Gives AI agents the ability to manage conversational context intelligently — starting with proven context compaction, with a roadmap toward autonomous memory control.
 
+For full documentation, architecture narratives, and examples, visit the canonical documentation at [lab.pollack.ai/projects/agent-memory](https://lab.pollack.ai/projects/agent-memory).
+
 ## The Problem
 
 Most AI agent loops accumulate conversation history on every turn. Tool results, file contents, error messages — all re-sent to the model with each request. On short tasks this is fine. On longer ones the context fills with stale information, costs climb, and the model loses focus in noise.
@@ -17,7 +19,7 @@ Add the dependency:
 <dependency>
     <groupId>io.github.markpollack</groupId>
     <artifactId>memory-advisor</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
@@ -121,7 +123,8 @@ Requires Java 17+. Uses Spring AI 2.0.0-M3.
 ./mvnw test          # Unit tests
 ./mvnw verify        # Full verification including integration tests
 ```
-
 ## License
 
-[Apache License 2.0](LICENSE)
+This project is licensed under the [Business Source License 1.1](LICENSE) starting with version 0.4.0.
+
+Earlier releases (v0.3.0 and prior) remain distributed under the [Apache License 2.0](LICENSE-APACHE.txt).
