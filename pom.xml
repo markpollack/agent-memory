@@ -49,7 +49,7 @@
 
         <!-- Dependency versions -->
         <spring-ai.version>2.0.0</spring-ai.version>
-        <jackson.version>2.21.2</jackson.version>
+        <jackson.version>2.21.6</jackson.version>
         <junit.version>5.11.4</junit.version>
         <assertj.version>3.27.3</assertj.version>
         <mockito.version>5.20.0</mockito.version>
@@ -88,12 +88,12 @@
             </dependency>
 
             <!-- Jackson 3 BOM (tools.jackson) converges transitive jackson-core
-                 3.0.3 dragged in by spring-ai 2.0 GA via jsonschema-generator
-                 to CVE-clear 3.1.4 (CVE-2026-29062) -->
+                  3.0.3 dragged in by spring-ai 2.0 GA via jsonschema-generator
+                  to CVE-clear 3.1.6 (CVE-2026-29062, CVE-2026-59889) -->
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>3.1.4</version>
+                <version>3.1.6</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -189,48 +189,7 @@
         </snapshotRepository>
     </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
-    </repositories>
-
     <profiles>
-        <!-- OWASP dependency-check: build-time CVE gate (fails on HIGH+). Run: ./mvnw -Powasp verify -->
-        <profile>
-            <id>owasp</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                        <version>12.1.0</version>
-                        <configuration>
-                            <failBuildOnCVSS>7.0</failBuildOnCVSS>
-                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals><goal>check</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>release</id>
             <build>

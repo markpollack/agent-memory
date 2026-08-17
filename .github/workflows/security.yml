@@ -1,2 +1,0 @@
-# Security scanning removed from CI per diligence policy.
-# Use local scan: ./scripts/security-scan.sh
