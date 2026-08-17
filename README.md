@@ -9,7 +9,7 @@ Progressive memory management for [Spring AI](https://docs.spring.io/spring-ai/r
 Most AI agent loops accumulate conversation history on every turn. Tool results, file contents, error messages — all re-sent to the model with each request. On short tasks this is fine. On longer ones the context fills with stale information, costs climb, and the model loses focus in noise.
 
 **Without memory management**: 18M input tokens for a single code-coverage task.
-**With compaction**: 854K tokens. **21x reduction, same quality.**
+**With compaction**: 854K tokens. **21x reduction, same quality.** (Measured in [Loopy](https://github.com/markpollack/loopy), which applies the same compaction approach to conversation messages.)
 
 ## Quick Start
 
@@ -127,3 +127,5 @@ Requires Java 17+. Uses Spring AI 2.0.0 GA.
 ## License
 
 [Business Source License 1.1 (see LICENSE)](LICENSE)
+
+Releases through 0.3.x were licensed under [Apache License 2.0](LICENSE-APACHE.txt).

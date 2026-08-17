@@ -69,7 +69,7 @@ for module in memory-core memory-advisor; do
   jar_dir="target/dependency-jars"
   mkdir -p "$jar_dir"
   # Copy runtime scope dependencies (exclude test)
-  ./mvnw -pl "$module" dependency:copy-dependances \
+  ./mvnw -pl "$module" dependency:copy-dependencies \
     -DoutputDirectory="$jar_dir" \
     -DincludeScope=runtime \
     -DexcludeTransitive=false \
