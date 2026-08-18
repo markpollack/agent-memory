@@ -16,8 +16,8 @@
 
     <licenses>
         <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <name>Business Source License 1.1</name>
+            <url>https://github.com/markpollack/agent-memory/blob/main/LICENSE</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -49,7 +49,10 @@
 
         <!-- Dependency versions -->
         <spring-ai.version>2.0.0</spring-ai.version>
-        <jackson.version>2.21.2</jackson.version>
+        <!-- Portfolio safety floors. 2.21.2 is below the Jackson 2 floor; 3.1.4 is
+             the version the shared Trivy snapshot reports for CVE-2026-59889. -->
+        <jackson.version>2.21.6</jackson.version>
+        <jackson3.version>3.1.6</jackson3.version>
         <junit.version>5.11.4</junit.version>
         <assertj.version>3.27.3</assertj.version>
         <mockito.version>5.20.0</mockito.version>
@@ -65,6 +68,8 @@
         <maven-javadoc-plugin.version>3.6.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
         <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.2</cyclonedx-maven-plugin.version>
 
         <!-- Plugin versions -->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -85,13 +90,12 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Jackson 3 BOM (tools.jackson) converges transitive jackson-core
-                 3.0.3 dragged in by spring-ai 2.0 GA via jsonschema-generator
-                 to CVE-clear 3.1.4 (CVE-2026-29062) -->
+            <!-- Jackson 3 BOM (tools.jackson) converges the Spring AI 2.0 GA
+                 jsonschema-generator transitive onto the portfolio floor. -->
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>3.1.4</version>
+                <version>${jackson3.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -187,48 +191,7 @@
         </snapshotRepository>
     </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
-    </repositories>
-
     <profiles>
-        <!-- OWASP dependency-check: build-time CVE gate (fails on HIGH+). Run: ./mvnw -Powasp verify -->
-        <profile>
-            <id>owasp</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.owasp</groupId>
-                        <artifactId>dependency-check-maven</artifactId>
-                        <version>12.1.0</version>
-                        <configuration>
-                            <failBuildOnCVSS>7.0</failBuildOnCVSS>
-                            <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals><goal>check</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>release</id>
             <build>
@@ -294,6 +257,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>${maven-source-plugin.version}</version>
+                        <configuration>
+                            <includeResources>true</includeResources>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -312,6 +278,9 @@
                         <configuration>
                             <failOnError>false</failOnError>
                             <quiet>true</quiet>
+                            <javadocDirectory>${project.build.directory}/javadoc-resources</javadocDirectory>
+                            <docfilessubdirs>true</docfilessubdirs>
+                            <bottom><![CDATA[Agent Memory is licensed under the project-specific Business Source License terms in the repository root LICENSE file.]]></bottom>
                         </configuration>
                         <executions>
                             <execution>
@@ -328,6 +297,21 @@
     </profiles>
 
     <build>
+        <!-- Root LICENSE remains the single authoritative copy. Stage it (and the
+             historical Apache record) into every published archive. -->
+        <resources>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}</directory>
+                <includes>
+                    <include>LICENSE</include>
+                    <include>LICENSE-APACHE.txt</include>
+                </includes>
+                <targetPath>META-INF</targetPath>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -391,6 +375,68 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>stage-javadoc-license</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/javadoc-resources/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${maven.multiModuleProjectDirectory}</directory>
+                                    <includes>
+                                        <include>LICENSE</include>
+                                        <include>LICENSE-APACHE.txt</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                One CycloneDX 1.6 JSON aggregate for the published reactor. Root-only
+                so children neither generate nor attach module SBOMs. The parent
+                artifact carries classifier `cyclonedx`.
+            -->
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>${cyclonedx-maven-plugin.version}</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <projectType>library</projectType>
+                    <schemaVersion>1.6</schemaVersion>
+                    <includeBomSerialNumber>true</includeBomSerialNumber>
+                    <includeCompileScope>true</includeCompileScope>
+                    <includeProvidedScope>true</includeProvidedScope>
+                    <includeRuntimeScope>true</includeRuntimeScope>
+                    <includeSystemScope>true</includeSystemScope>
+                    <includeTestScope>false</includeTestScope>
+                    <includeLicenseText>false</includeLicenseText>
+                    <outputReactorProjects>false</outputReactorProjects>
+                    <skipNotDeployed>false</skipNotDeployed>
+                    <outputFormat>json</outputFormat>
+                    <outputName>agent-memory-bom</outputName>
+                    <classifier>cyclonedx</classifier>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate-cyclonedx-sbom</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>makeAggregateBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
