@@ -19,6 +19,17 @@ Spring AI 2.0.0. This is a pre-1.0 library.
 </dependency>
 ```
 
+## Operating boundary
+
+The 0.4.0 filesystem store is **local, plaintext, and single-writer**.
+
+- Memory is written to the local filesystem in clear text. It is not encrypted and is not shared
+  storage.
+- There is no locking, no atomic index replacement, and no crash recovery. A second concurrent
+  writer, or a crash during an index write, can corrupt or truncate `_index.json`.
+- Stored memory is injected verbatim into the model prompt, so write only trusted content to it.
+- Multi-process or concurrent-writer use requires external coordination.
+
 ## Build
 
 ```bash
