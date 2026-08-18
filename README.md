@@ -8,30 +8,15 @@ uncompacted set crosses a configurable threshold.
 See the [Agent Memory documentation](https://lab.pollack.ai/projects/agent-memory) for the
 roadmap, module notes, and the originating research.
 
-Latest public artifacts are **0.3.0** (Apache License 2.0). The intended next line is **0.4.0**
-(Business Source License 1.1; not yet published). Requires Java 17+ and Spring AI 2.0.0.
-Published modules are `memory-core` and `memory-advisor`.
+Current artifacts are **0.4.0** (`memory-core` and `memory-advisor`). Requires Java 17+ and
+Spring AI 2.0.0. This is a pre-1.0 library.
 
 ```xml
 <dependency>
     <groupId>io.github.markpollack</groupId>
     <artifactId>memory-advisor</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
 </dependency>
-```
-
-```java
-var memoryStore = new FileSystemMemoryStore(Path.of(".memory"));
-
-var advisor = CompactionMemoryAdvisor.builder(memoryStore)
-    .compactionChatClient(ChatClient.create(haikuModel))
-    .memoryTokenBudget(8192)
-    .compactionRatio(0.75)
-    .build();
-
-ChatClient agent = ChatClient.builder(chatModel)
-    .defaultAdvisors(advisor)
-    .build();
 ```
 
 ## Build
@@ -46,12 +31,7 @@ Standalone consumer Jackson resolution (no AgentWorks BOM):
 ./scripts/check-consumer-resolution.sh
 ```
 
-This repository has no live-model benchmark suite. Research measurements belong in the
-[canonical documentation](https://lab.pollack.ai/projects/agent-memory).
-
 ## License
 
-Current development and the intended 0.4.0 line are licensed under the
-[Business Source License 1.1](LICENSE). Versions 0.3.0 and earlier remain available under the
-historical [Apache License 2.0](LICENSE-APACHE.txt); those tags and Maven Central artifacts are
-unchanged.
+Licensed under the [Business Source License 1.1](LICENSE). Versions 0.3.0 and earlier remain
+available under the historical [Apache License 2.0](LICENSE-APACHE.txt).

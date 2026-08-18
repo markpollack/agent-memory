@@ -2,18 +2,23 @@
 # Verify standalone consumers of the published modules resolve the accepted
 # Jackson floors without importing agentworks-bom or managing Jackson.
 #
-# The script installs the current checkout into an isolated Maven repository,
-# builds throwaway consumers for memory-core and memory-advisor, inspects the
-# runtime graph, and fails if any affected Jackson artifact is below the floor.
+# The script derives the current root Maven project.version, installs the
+# current checkout into an isolated Maven repository, builds throwaway
+# consumers for memory-core and memory-advisor, inspects the runtime graph,
+# and fails if any affected Jackson artifact is below the floor.
 # Generated consumer files are not written into the repository.
 #
 # Usage:
 #   ./scripts/check-consumer-resolution.sh
 #   MAVEN_REPO_LOCAL=/path/to/isolated-m2 ./scripts/check-consumer-resolution.sh
+#   CONSUMER_VERSION=0.4.0 ./scripts/check-consumer-resolution.sh
+#
+# CONSUMER_VERSION is an optional fixture override. The normal invocation
+# derives project.version with Maven and requires no version argument.
 set -euo pipefail
 
 usage() {
-  sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -42,7 +47,43 @@ else
   mkdir -p "${REPO}"
 fi
 
-echo "Installing current checkout into ${REPO}"
+validate_maven_version() {
+  local value="$1"
+  local source="$2"
+  if [[ -z "${value}" ]]; then
+    echo "ERROR: ${source} is empty." >&2
+    return 1
+  fi
+  if [[ "${value}" == *$'\n'* || "${value}" == *$'\r'* || "${value}" == *$'\t'* || "${value}" == *' '* ]]; then
+    echo "ERROR: ${source} is unresolved or malformed (whitespace): '${value}'" >&2
+    return 1
+  fi
+  if [[ "${value}" == *'$'* || "${value}" == *'{'* || "${value}" == *'}'* ]]; then
+    echo "ERROR: ${source} looks like an unresolved Maven expression: '${value}'" >&2
+    return 1
+  fi
+  if [[ ! "${value}" =~ ^[0-9][A-Za-z0-9._-]*$ ]]; then
+    echo "ERROR: ${source} is not a usable Maven version: '${value}'" >&2
+    return 1
+  fi
+}
+
+if [[ -n "${CONSUMER_VERSION:-}" ]]; then
+  PROJECT_VERSION="${CONSUMER_VERSION}"
+  validate_maven_version "${PROJECT_VERSION}" "CONSUMER_VERSION"
+  echo "Using CONSUMER_VERSION override: ${PROJECT_VERSION}"
+else
+  echo "Deriving root project.version with Maven help:evaluate"
+  PROJECT_VERSION="$(
+    ./mvnw -B -N -q -DforceStdout help:evaluate -Dexpression=project.version \
+      "-Dmaven.repo.local=${REPO}"
+  )"
+  PROJECT_VERSION="${PROJECT_VERSION//$'\r'/}"
+  validate_maven_version "${PROJECT_VERSION}" "Maven project.version"
+  echo "Derived project.version: ${PROJECT_VERSION}"
+fi
+
+echo "Installing current checkout (${PROJECT_VERSION}) into ${REPO}"
 ./mvnw -B -DskipTests install "-Dmaven.repo.local=${REPO}"
 
 check_module() {
@@ -62,7 +103,7 @@ check_module() {
         <dependency>
             <groupId>io.github.markpollack</groupId>
             <artifactId>${module}</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>${PROJECT_VERSION}</version>
         </dependency>
     </dependencies>
 </project>
@@ -182,4 +223,4 @@ if [[ "${failures}" -ne 0 ]]; then
   exit 1
 fi
 
-echo "Standalone consumer Jackson resolution passed for memory-core and memory-advisor."
+echo "Standalone consumer Jackson resolution passed for memory-core and memory-advisor at ${PROJECT_VERSION}."
