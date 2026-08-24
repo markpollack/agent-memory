@@ -56,7 +56,7 @@
         <mockito.version>5.23.0</mockito.version>
         <archunit.version>1.5.0</archunit.version>
         <jspecify.version>1.0.1</jspecify.version>
-        <slf4j.version>2.0.17</slf4j.version>
+        <slf4j.version>2.0.18</slf4j.version>
         <logback.version>1.6.3</logback.version>
         <reactor.version>3.8.7</reactor.version>
         <jacoco.version>0.8.15</jacoco.version>
