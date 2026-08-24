@@ -11,7 +11,7 @@
 # Usage:
 #   ./scripts/check-consumer-resolution.sh
 #   MAVEN_REPO_LOCAL=/path/to/isolated-m2 ./scripts/check-consumer-resolution.sh
-#   CONSUMER_VERSION=0.4.0 ./scripts/check-consumer-resolution.sh
+#   CONSUMER_VERSION=0.5.0 ./scripts/check-consumer-resolution.sh
 #
 # CONSUMER_VERSION is an optional fixture override. The normal invocation
 # derives project.version with Maven and requires no version argument.
@@ -29,9 +29,9 @@ fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT}"
 
-JACKSON2_FLOOR="${JACKSON2_FLOOR:-2.21.6}"
-JACKSON2_ANNOTATIONS_LINE="${JACKSON2_ANNOTATIONS_LINE:-2.21}"
-JACKSON3_FLOOR="${JACKSON3_FLOOR:-3.1.6}"
+JACKSON2_FLOOR="${JACKSON2_FLOOR:-2.22.2}"
+JACKSON2_ANNOTATIONS_LINE="${JACKSON2_ANNOTATIONS_LINE:-2.22}"
+JACKSON3_FLOOR="${JACKSON3_FLOOR:-3.2.2}"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/agent-memory-consumer-resolution.XXXXXX")"
 cleanup() {

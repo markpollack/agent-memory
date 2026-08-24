@@ -8,14 +8,14 @@ uncompacted set crosses a configurable threshold.
 See the [Agent Memory documentation](https://lab.pollack.ai/projects/agent-memory) for the
 roadmap, module notes, and the originating research.
 
-Current artifacts are **0.4.0** (`memory-core` and `memory-advisor`). Requires Java 17+ and
-Spring AI 2.0.0. This is a pre-1.0 library.
+Current artifacts are **0.5.0** (`memory-core` and `memory-advisor`). Requires Java 17+ and
+Spring AI 2.0.1. This is a pre-1.0 library.
 
 ```xml
 <dependency>
     <groupId>io.github.markpollack</groupId>
     <artifactId>memory-advisor</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
 </dependency>
 ```
 

@@ -34,10 +34,8 @@
         <!-- Jackson 3 is already on the compile classpath via Spring AI /
              jsonschema-generator. Declaring the two artifacts that appear in
              that graph makes Maven nearest-wins choose the parent Jackson 3
-             BOM (3.1.6) for standalone consumers who do not import this
-             reactor or agentworks-bom. spring-ai-model 2.0.0 hard-pins
-             jackson-databind 3.1.4; jsonschema-generator 5.0.0 resolves
-             jackson-core 3.0.3. This is not a Jackson 3 source migration. -->
+             BOM for standalone consumers who do not import this reactor or
+             agentworks-bom. This is not a Jackson 3 source migration. -->
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>

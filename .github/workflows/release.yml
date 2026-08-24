@@ -17,7 +17,7 @@ jobs:
       version: ${{ inputs.version }}
       # Default skip-tests=false: the reusable workflow runs verify before deploy.
       java-version: '17'
-      release-notes-file: RELEASE_NOTES_0.4.md
+      release-notes-file: RELEASE_NOTES_0.5.md
     secrets:
       MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
       MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
