@@ -30,7 +30,6 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT}"
 
 JACKSON2_FLOOR="${JACKSON2_FLOOR:-2.22.2}"
-JACKSON2_ANNOTATIONS_LINE="${JACKSON2_ANNOTATIONS_LINE:-2.22}"
 JACKSON3_FLOOR="${JACKSON3_FLOOR:-3.2.2}"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/agent-memory-consumer-resolution.XXXXXX")"
@@ -127,11 +126,11 @@ EOF
   grep -E 'jackson-(core|databind|annotations|datatype-jsr310)' "${list}" || true
   echo
 
-  python3 - "${module}" "${list}" "${JACKSON2_FLOOR}" "${JACKSON2_ANNOTATIONS_LINE}" "${JACKSON3_FLOOR}" <<'PY'
+  python3 - "${module}" "${list}" "${JACKSON2_FLOOR}" "${JACKSON3_FLOOR}" <<'PY'
 import re
 import sys
 
-module, list_path, jackson2_floor, annotations_line, jackson3_floor = sys.argv[1:]
+module, list_path, jackson2_floor, jackson3_floor = sys.argv[1:]
 
 def parse_version(value):
     parts = []
@@ -141,6 +140,13 @@ def parse_version(value):
         else:
             break
     return tuple(parts)
+
+def minor_line(value):
+    parts = parse_version(value)
+    if len(parts) < 2:
+        raise ValueError(f"version has no minor component: {value}")
+    return (parts[0], parts[1])
+
 
 def cmp(a, b):
     n = max(len(a), len(b))
@@ -168,10 +174,44 @@ required = [
     ("com.fasterxml.jackson.core", "jackson-core", jackson2_floor, "jackson2"),
     ("com.fasterxml.jackson.core", "jackson-databind", jackson2_floor, "jackson2"),
     ("com.fasterxml.jackson.datatype", "jackson-datatype-jsr310", jackson2_floor, "jackson2"),
-    ("com.fasterxml.jackson.core", "jackson-annotations", annotations_line, "annotations"),
     ("tools.jackson.core", "jackson-core", jackson3_floor, "jackson3"),
     ("tools.jackson.core", "jackson-databind", jackson3_floor, "jackson3"),
 ]
+
+# `jackson-annotations` is versioned independently of the rest of Jackson 2 and has carried no
+# patch component since 2.20, so jackson-bom 2.22.2 manages jackson-annotations 2.22. The rule is a
+# line rule, not a floor: annotations must belong to the same major.minor line as the Jackson 2 it
+# is compiled against. Derive that line from the closure under test rather than hardcoding it, so a
+# dependency refresh cannot leave this gate behind.
+jackson2_lines = {
+    minor_line(version)
+    for (group, artifact), version in resolved.items()
+    if group.startswith("com.fasterxml.jackson") and artifact != "jackson-annotations"
+}
+annotations = resolved.get(("com.fasterxml.jackson.core", "jackson-annotations"))
+if annotations is None:
+    errors.append("missing com.fasterxml.jackson.core:jackson-annotations")
+elif len(jackson2_lines) > 1:
+    lines = ", ".join(".".join(str(part) for part in line) for line in sorted(jackson2_lines))
+    errors.append(
+        f"com.fasterxml.jackson.core:jackson-annotations:{annotations} cannot be anchored: "
+        f"Jackson 2 line is split across this closure ({lines})"
+    )
+elif jackson2_lines:
+    expected = next(iter(jackson2_lines))
+    if minor_line(annotations) != expected:
+        shown = ".".join(str(part) for part in expected)
+        errors.append(
+            f"com.fasterxml.jackson.core:jackson-annotations:{annotations} is not on the "
+            f"{shown} line used by the rest of Jackson 2 in this closure"
+        )
+elif cmp(minor_line(annotations), minor_line(jackson2_floor)) < 0:
+    # Nothing to be consistent with, so only the floor applies. Compare lines rather than full
+    # versions: annotations 2.21 legitimately satisfies a 2.21.6 floor.
+    shown = ".".join(str(part) for part in minor_line(jackson2_floor))
+    errors.append(
+        f"com.fasterxml.jackson.core:jackson-annotations:{annotations} is below the {shown} line"
+    )
 
 for group, artifact, floor, kind in required:
     version = resolved.get((group, artifact))
@@ -207,7 +247,8 @@ if errors:
         print(f"  {error}", file=sys.stderr)
     sys.exit(1)
 
-print(f"OK {module}: Jackson 2 {jackson2_floor} (annotations {annotations_line} line), Jackson 3 {jackson3_floor}")
+annotations_shown = ".".join(str(part) for part in minor_line(annotations)) if annotations else "absent"
+print(f"OK {module}: Jackson 2 {jackson2_floor} (annotations {annotations_shown} line, derived), Jackson 3 {jackson3_floor}")
 PY
 }
 
