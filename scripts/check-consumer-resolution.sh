@@ -29,8 +29,8 @@ fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT}"
 
-JACKSON2_FLOOR="${JACKSON2_FLOOR:-2.22.2}"
-JACKSON3_FLOOR="${JACKSON3_FLOOR:-3.2.2}"
+JACKSON2_FLOOR="${JACKSON2_FLOOR:-2.22.3}"
+JACKSON3_FLOOR="${JACKSON3_FLOOR:-3.2.3}"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/agent-memory-consumer-resolution.XXXXXX")"
 cleanup() {
